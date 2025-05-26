@@ -1,0 +1,18 @@
+{
+  "name": "puppeteer-app",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "node flow-runner.js",
+    "audit": "node main.js",
+    "help": "node flow-runner.js --help"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "minimist": "^1.2.8",
+    "puppeteer": "^24.8.2"
+  }
+}
