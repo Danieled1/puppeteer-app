@@ -7,17 +7,18 @@ module.exports = async function lessonPageFlow(page) {
   
       await page.waitForSelector('iframe, video', { timeout: 8000 });
       const playerReady = performance.now();
-      console.log(`🎥 Video/player ready in ${(playerReady - start).toFixed(0)}ms`);
+      console.log(`🎥 Video/player ready in ${(playerReady - start).toFixed(0)}ms`); // 🎥 UX: Player iframe render time
   
       await page.waitForSelector('#learndash-course-header .bb-ld-info-bar');
       const sidebarReady = performance.now();
-      console.log(`🧭 Sidebar info loaded in ${(sidebarReady - start).toFixed(0)}ms`);
+      console.log(`🧭 Sidebar info loaded in ${(sidebarReady - start).toFixed(0)}ms`); // 🧭 UX: Sidebar readiness
   
+      // 🐢 UX: Slow video detection is handled in XHR logs
+      // 🧠 UX: Buffering or playback delay would be tested interactively
       await new Promise(r => setTimeout(r, 3000));
       const done = performance.now();
       console.log(`🏁 Total lesson page wait: ${(done - start).toFixed(0)}ms`);
       if (done - start > 7000) console.warn('⚠️ Page slow (>7s)');
-
     } catch (err) {
       console.warn('⚠️ Lesson page failed:', err.message);
     }
