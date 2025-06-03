@@ -1,0 +1,58 @@
+[
+  {
+    "flow": "loginFlow",
+    "totalMs": 12583,
+    "domMs": 1359,
+    "loginProcessingMs": 6501,
+    "timestamp": "2025-05-29T18:58:24.852Z"
+  },
+  {
+    "flow": "courses",
+    "totalMs": 7644,
+    "domMs": 4427,
+    "firstCardMs": 4600,
+    "courseCount": 20,
+    "timestamp": "2025-05-29T18:58:32.499Z"
+  },
+  {
+    "flow": "coursePage",
+    "totalMs": 6880,
+    "domMs": 3750,
+    "tabsReadyMs": 3864,
+    "lessonListMs": 3869,
+    "timestamp": "2025-05-29T18:58:39.380Z"
+  },
+  {
+    "flow": "lessonPage",
+    "totalMs": 8410,
+    "domMs": 4271,
+    "playerMs": 5261,
+    "sidebarMs": 5405,
+    "timestamp": "2025-05-29T18:58:47.791Z"
+  },
+  {
+    "flow": "ticketFlow",
+    "totalMs": 14403,
+    "domMs": 3295,
+    "formReadyMs": 3823,
+    "submitMs": 8949,
+    "timestamp": "2025-05-29T18:59:02.196Z"
+  },
+  {
+    "flow": "placementFlow",
+    "totalMs": 3624,
+    "domMs": 3329,
+    "resumeFormMs": 8,
+    "courseListMs": 5,
+    "courseCount": 4,
+    "timestamp": "2025-05-29T18:59:05.821Z"
+  },
+  {
+    "flow": "gradesFlow",
+    "totalMs": 3893,
+    "domMs": 2976,
+    "tableRowMs": 809,
+    "rowCount": 7,
+    "timestamp": "2025-05-29T18:59:09.715Z"
+  }
+]

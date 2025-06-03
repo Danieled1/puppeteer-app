@@ -1,39 +1,70 @@
-// main.js
+#!/usr/bin/env node
+const minimist = require('minimist');
 const puppeteer = require('puppeteer');
-const { setupXHRLogger } = require('./logger/loggerXHR');
+const { setupXHRLogger, clearXHRLogs } = require('./logger/loggerXHR');
 const summarizeXHR = require('./logger/xhr-summary');
-const { clearXHRLogs } = require('./logger/loggerXHR');
+const { flushMetrics } = require('./logger/metricsExporter');
 
-const loginFlow = require('./flows/loginFlow');
-const coursesFlow = require('./flows/coursesFlow');
-const coursePageFlow = require('./flows/coursePageFlow')
-const lessonPageFlow = require('./flows/lessonPageFlow')
-const ticketFlow = require('./flows/ticketFlow');
-const placementFlow = require('./flows/placementFlow');
-const gradesFlow = require('./flows/gradesFlow');
-const supportFlow = require('./flows/supportFlow');
+// Load flows dynamically
+const flows = {
+  login: require('./flows/loginFlow'),
+  courses: require('./flows/coursesFlow'),
+  coursePage: require('./flows/coursePageFlow'),
+  lessonPage: require('./flows/lessonPageFlow'),
+  ticket: require('./flows/ticketFlow'),
+  placement: require('./flows/placementFlow'),
+  grades: require('./flows/gradesFlow'),
+  support: require('./flows/supportFlow'),
+};
 
 (async () => {
-  clearXHRLogs();
+  const args = minimist(process.argv.slice(2));
+  const selectedFlows = args._;
+  const shouldExport = true; 
+  const context = { shouldExport };
 
+  if (selectedFlows.length === 0 || selectedFlows.includes('help') || args.help || args.h) {
+    console.log(`
+📘 Usage: npm start -- <flow1> <flow2> ...
+
+Available flows:
+  login         → Test login UX and duration
+  courses       → Load courses page and count cards
+  coursePage    → Load course overview page
+  lessonPage    → Open lesson and video playback
+  ticket        → Open and submit a ticket
+  placement     → Test placement form readiness
+  grades        → Load grades and test AJAX
+  support       → Test support page visibility
+
+Examples:
+  npm start -- login
+  npm start -- login grades
+  npm run audit
+    `);
+    process.exit(0);
+  }
+
+  clearXHRLogs();
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
     args: ['--disable-cache', '--disk-cache-size=0'],
   });
-  const page = await browser.newPage();
 
+  const page = await browser.newPage();
   await setupXHRLogger(page);
-  await loginFlow(page);
-  await coursesFlow(page);
-  await coursePageFlow(page)
-  await lessonPageFlow(page)
-  await ticketFlow(page);
-  await placementFlow(page);
-  await gradesFlow(page);
-  await supportFlow(page);
+
+  for (const flowName of selectedFlows) {
+    if (!flows[flowName]) {
+      console.warn(`❌ Skipping unknown flow: ${flowName}`);
+      continue;
+    }
+    console.log(`🚀 Running flow: ${flowName}`);
+    await flows[flowName](page, context);
+  }
 
   summarizeXHR();
-  console.log('✅ All flows done. Closing browser.');
+  if (shouldExport) flushMetrics();
   await browser.close();
 })();

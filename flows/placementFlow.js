@@ -1,3 +1,5 @@
+const { addMetric } = require("../logger/metricsExporter");
+
 const assertVisible = async (page, selector, label) => {
   const found = await page.$(selector);
   if (found) {
@@ -7,7 +9,7 @@ const assertVisible = async (page, selector, label) => {
   }
 };
 
-module.exports = async function placementFlow(page) {
+module.exports = async function placementFlow(page, context = {}) {
   const flowStart = performance.now();
   const timings = {};
 
@@ -54,12 +56,24 @@ module.exports = async function placementFlow(page) {
     } else {
       console.warn('📉 UX: No related job-prep courses found'); // 🧠 UX: Zero course edge case
     }
-
-    const totalTime = performance.now() - flowStart;
-    console.log(`📊 placementFlow completed in ${Math.round(totalTime)}ms`);
+    
+    const totalTime = Math.round(performance.now() - flowStart);
+    console.log(`📊 placementFlow completed in ${totalTime}ms`);
     if (totalTime > 7000) {
-      console.warn(`⚠️ SLOW PAGE: placement page took ${Math.round(totalTime)}ms to fully render`);
+      console.warn(`⚠️ SLOW PAGE: placement page took ${totalTime}ms to fully render`);
     }
+    if (context.shouldExport) {
+      addMetric({
+        flow: 'placementFlow',
+        totalMs: totalTime,
+        domMs: Math.round(timings.domLoad),
+        resumeFormMs: Math.round(timings.resumeFormLoad),
+        courseListMs: Math.round(timings.courseListRender),
+        courseCount: courseItems.length,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
   } catch (err) {
     console.warn('⚠️ placementFlow failed:', err.message);
   }

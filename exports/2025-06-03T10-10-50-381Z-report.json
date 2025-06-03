@@ -1,0 +1,50 @@
+[
+  {
+    "flow": "loginFlow",
+    "totalMs": 20616,
+    "domMs": 1624,
+    "loginProcessingMs": 14231,
+    "timestamp": "2025-06-03T10:09:34.950Z"
+  },
+  {
+    "flow": "courses",
+    "totalMs": 8808,
+    "domMs": 5558,
+    "firstCardMs": 5764,
+    "courseCount": 20,
+    "timestamp": "2025-06-03T10:09:43.760Z"
+  },
+  {
+    "flow": "coursePage",
+    "totalMs": 7041,
+    "domMs": 3926,
+    "tabsReadyMs": 4027,
+    "lessonListMs": 4034,
+    "timestamp": "2025-06-03T10:09:50.804Z"
+  },
+  {
+    "flow": "lessonPage",
+    "totalMs": 8648,
+    "domMs": 4631,
+    "playerMs": 5448,
+    "sidebarMs": 5644,
+    "timestamp": "2025-06-03T10:09:59.455Z"
+  },
+  {
+    "flow": "placementFlow",
+    "totalMs": 6998,
+    "domMs": 6764,
+    "resumeFormMs": 6,
+    "courseListMs": 6,
+    "courseCount": 4,
+    "timestamp": "2025-06-03T10:10:42.835Z"
+  },
+  {
+    "flow": "gradesFlow",
+    "totalMs": 4222,
+    "domMs": 3271,
+    "tableRowMs": 843,
+    "rowCount": 7,
+    "timestamp": "2025-06-03T10:10:47.058Z"
+  }
+]

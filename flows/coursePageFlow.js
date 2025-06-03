@@ -1,4 +1,6 @@
-module.exports = async function coursePageFlow(page) {
+const { addMetric } = require("../logger/metricsExporter");
+
+module.exports = async function coursePageFlow(page, context = {}) {
     const start = performance.now();
     try {
       await page.goto('https://app.digitalschool.co.il/courses/קורס-ai-live-20-08-23/', { waitUntil: 'domcontentloaded' });
@@ -15,9 +17,24 @@ module.exports = async function coursePageFlow(page) {
   
       // 🧠 UX: Visual stability observation (flicker, jumps)
       await new Promise(r => setTimeout(r, 3000));
-      const done = performance.now();
-      console.log(`🏁 Total course page wait: ${(done - start).toFixed(0)}ms`);
-      if (done - start > 7000) console.warn('⚠️ Page slow (>7s)');
+      const end = performance.now();
+      const totalTime = Math.round(end - start);
+      console.log(`🏁 Total course page wait: ${totalTime}ms`);
+      if (totalTime > 7000) {
+        console.warn(`⚠️ SLOW PAGE: course page took ${totalTime}ms to fully render`);
+      }      
+
+      if (context?.shouldExport) {
+        addMetric({
+          flow: 'coursePage',
+          totalMs: totalTime,
+          domMs: Math.round(domReady - start),
+          tabsReadyMs: Math.round(tabsReady - start),
+          lessonListMs: Math.round(listReady - start),
+          timestamp: new Date().toISOString()
+        });
+      }
+
     } catch (err) {
       console.warn('⚠️ Course page failed:', err.message);
     }

@@ -7,7 +7,7 @@ const assertVisible = async (page, selector, label) => {
     }
   };
   
-  module.exports = async function supportFlow(page) {
+  module.exports = async function supportFlow(page, context= {}) {
     const flowStart = performance.now();
     const timings = {};
   
@@ -24,12 +24,21 @@ const assertVisible = async (page, selector, label) => {
   
       // 🧭 UX: Scroll responsiveness and external redirect testing can be done in Layer 4
   
-      const totalTime = performance.now() - flowStart;
-      console.log(`✅ supportFlow completed in ${Math.round(totalTime)}ms`);
+      const totalTime = Math.round(performance.now() - flowStart);
+      console.log(`✅ supportFlow completed in ${totalTime}ms`);
       if (totalTime > 5000) {
-        console.warn(`⚠️ SLOW PAGE: support page took ${Math.round(totalTime)}ms`);
+        console.warn(`⚠️ SLOW PAGE: support page took ${totalTime}ms to fully render`);
       }
-  
+      
+      if (context.shouldExport) {
+        addMetric({
+          flow: 'supportFlow',
+          totalMs: totalTime,
+          domMs: Math.round(timings.domLoad),
+          timestamp: new Date().toISOString(),
+        });
+      }
+      
       await new Promise(r => setTimeout(r, 2000));
     } catch (err) {
       console.warn('⚠️ supportFlow failed:', err.message);

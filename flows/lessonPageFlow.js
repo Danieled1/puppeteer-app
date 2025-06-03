@@ -1,4 +1,6 @@
-module.exports = async function lessonPageFlow(page) {
+const { addMetric } = require("../logger/metricsExporter");
+
+module.exports = async function lessonPageFlow(page, context = {}) {
     const start = performance.now();
     try {
       await page.goto('https://app.digitalschool.co.il/courses/קורס-ai-live-20-08-23/lessons/mordi-fullstack-20-08-2023-חלק-ב-שיעור-1/', { waitUntil: 'domcontentloaded' });
@@ -16,9 +18,25 @@ module.exports = async function lessonPageFlow(page) {
       // 🐢 UX: Slow video detection is handled in XHR logs
       // 🧠 UX: Buffering or playback delay would be tested interactively
       await new Promise(r => setTimeout(r, 3000));
-      const done = performance.now();
-      console.log(`🏁 Total lesson page wait: ${(done - start).toFixed(0)}ms`);
-      if (done - start > 7000) console.warn('⚠️ Page slow (>7s)');
+      const end = performance.now();
+      const totalTime = Math.round(end - start);
+
+      console.log(`🏁 Total lesson page wait: ${totalTime}ms`);
+      if (totalTime > 7000) {
+        console.warn(`⚠️ SLOW PAGE: lesson page took ${totalTime}ms to fully render`);
+      }
+      
+      if (context.shouldExport) {
+        addMetric({
+          flow: 'lessonPage',
+          totalMs: totalTime,
+          domMs: Math.round(domReady - start),
+          playerMs: Math.round(playerReady - start),
+          sidebarMs: Math.round(sidebarReady - start),
+          timestamp: new Date().toISOString(),
+        });
+      }
+
     } catch (err) {
       console.warn('⚠️ Lesson page failed:', err.message);
     }

@@ -1,0 +1,9 @@
+[
+  {
+    "flow": "loginFlow",
+    "totalMs": 7641,
+    "domMs": 1325,
+    "loginProcessingMs": 2440,
+    "timestamp": "2025-05-29T18:51:40.177Z"
+  }
+]

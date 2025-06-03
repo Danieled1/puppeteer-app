@@ -1,0 +1,25 @@
+[
+  {
+    "flow": "loginFlow",
+    "totalMs": 35534,
+    "domMs": 20112,
+    "loginProcessingMs": 11021,
+    "timestamp": "2025-06-03T12:33:02.934Z"
+  },
+  {
+    "flow": "ticketFlow",
+    "totalMs": 17375,
+    "domMs": 3741,
+    "buttonsReadyMs": 4972,
+    "formReadyMs": 5282,
+    "sectorSelectMs": 27,
+    "subSectorSelectMs": 39,
+    "submitMs": 10111,
+    "modalMs": 1488,
+    "acfValidationXHR": [
+      null
+    ],
+    "slowXHRCount": 0,
+    "timestamp": "2025-06-03T12:33:20.310Z"
+  }
+]
