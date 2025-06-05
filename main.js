@@ -8,6 +8,7 @@ const { flushMetrics } = require('./logger/metricsExporter');
 // Load flows dynamically
 const flows = {
   login: require('./flows/loginFlow'),
+  globalSidebar: require('./flows/globalTemplate/globalSidebarFlow'),
   courses: require('./flows/coursesFlow'),
   coursePage: require('./flows/coursePageFlow'),
   lessonPage: require('./flows/lessonPageFlow'),
@@ -15,6 +16,8 @@ const flows = {
   placement: require('./flows/placementFlow'),
   grades: require('./flows/gradesFlow'),
   support: require('./flows/supportFlow'),
+  ticketEmptyStateFlow: require('./flows/ticketEmptyStateFlow'),
+
 };
 
 (async () => {
@@ -28,14 +31,16 @@ const flows = {
 📘 Usage: npm start -- <flow1> <flow2> ...
 
 Available flows:
-  login         → Test login UX and duration
-  courses       → Load courses page and count cards
-  coursePage    → Load course overview page
-  lessonPage    → Open lesson and video playback
-  ticket        → Open and submit a ticket
-  placement     → Test placement form readiness
-  grades        → Load grades and test AJAX
-  support       → Test support page visibility
+  login                → Test login UX and duration
+  courses              → Load courses page and count cards
+  coursePage           → Load course overview page
+  lessonPage           → Open lesson and video playback
+  ticket               → Open and submit a ticket
+  placement            → Test placement form readiness
+  grades               → Load grades and test AJAX
+  support              → Test support page visibility
+  ticketEmptyStateFlow → Test ticket table empty state (zero tickets)
+
 
 Examples:
   npm start -- login

@@ -17,8 +17,8 @@ logs/
 .idea/
 .vscode/
 .pem
-.csv
-
+*.csv
+*.json
 # Ignore OS and editor-specific files
 .DS_Store
 Thumbs.db

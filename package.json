@@ -6,12 +6,13 @@
     "start": "node main.js",
     "audit": "node main.js login courses coursePage lessonPage ticket placement grades support",
     "help": "node main.js --help"
-  },  
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "dotenv": "^16.5.0",
     "minimist": "^1.2.8",
     "puppeteer": "^24.8.2"
   }

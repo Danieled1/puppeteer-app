@@ -1,8 +1,14 @@
+require('dotenv').config();
 const { addMetric } = require('../logger/metricsExporter');
+
+const username = process.env.TEST_USERNAME;
+const password = process.env.TEST_PASSWORD;
+
 async function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
-
+//Our main test user: test_live_student
+// no tickets user: student_testing5
 async function typeWithClear(page, selector, text, delayMs = 100) {
   await page.waitForSelector(selector, { visible: true });
   await page.click(selector); // Activate field
@@ -28,8 +34,8 @@ module.exports = async function loginFlow(page, context = {}) {
   console.log(`📥 Login page DOM loaded in ${(domLoaded - flowStart).toFixed(0)}ms`);
 
   // Phase 2: Safe typing
-  await typeWithClear(page, '#user_login', 'test_live_student');
-  await typeWithClear(page, '#user_pass', 'test_live_student');
+  await typeWithClear(page, '#user_login',username); 
+  await typeWithClear(page, '#user_pass',password);
 
   
   
