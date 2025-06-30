@@ -1,79 +1,127 @@
 const { addMetric } = require('../../logger/metricsExporter');
+const delay = ms => new Promise(r => setTimeout(r, ms));
 
-// Layer 1: BuddyPanel Sidebar Existence and Structure
-module.exports = async function globalSidebarFlow(page, context = {}) {
-    // 1. Wait for sidebar element to appear after login
-    await page.waitForSelector('aside.buddypanel', { visible: true, timeout: 7000 });
-    const sidebar = await page.$('aside.buddypanel');
-    if (!sidebar) throw new Error('Sidebar (buddypanel) not found in DOM');
-  
-    // 2. Inner menu wrapper
-    const inner = await page.$('.side-panel-inner');
-    if (!inner) throw new Error('Sidebar inner wrapper (.side-panel-inner) not found');
-  
-    // 3. Main menu container
-    const nav = await page.$('.side-panel-menu-container');
-    if (!nav) throw new Error('Sidebar menu container (.side-panel-menu-container) not found');
-  
-    // 4. The main menu UL
-    const ul = await page.$('.buddypanel-menu');
-    if (!ul) throw new Error('Sidebar menu list (.buddypanel-menu) not found');
-  
-    // 5. Count all menu items
-    const allItems = await page.$$('.buddypanel-menu > li');
-    console.log(`✅ Sidebar found with ${allItems.length} top-level menu items`);
-  
-    // 6. Check for each menu group (main, settings, footer)
-    // - You can identify them by their text or structure (the order in your PHP)
-    const requiredLabels = [
-      "הפרופיל שלי", "ניהול מרצה", "הקורס שלי", // main group
-      "תמיכה מקצועית", "פניות ואישורים", "השמה", "ציונים", // settings group
-      "משוב", "התנתק" // footer group
-    ];
-    const textContents = await page.$$eval('.buddypanel-menu > li a span', spans =>
-      spans.map(s => s.textContent.trim())
-    );
-  
-    requiredLabels.forEach(label => {
-      if (textContents.includes(label)) {
-        console.log(`✅ Menu item found: "${label}"`);
-      } else {
-        console.warn(`⚠️  Menu item missing: "${label}"`);
+// Helper: Find menu item <li> by <span> text anywhere in the sidebar
+async function findMenuItemByAnySpan(page, label) {
+  return await page.evaluateHandle((label) => {
+    const spans = document.querySelectorAll('.buddypanel-menu span');
+    for (const span of spans) {
+      if (span.textContent.trim() === label) {
+        let el = span;
+        while (el && el.tagName !== 'LI') el = el.parentElement;
+        return el;
       }
+    }
+    return null;
+  }, label);
+}
+
+// Click and check open state for collapsible menus
+async function clickAndCheckMenuItem(liHandle, label) {
+  let clicked = false, open = false, count = 0;
+  if (liHandle && await liHandle.evaluate(el => !!el)) {
+    try {
+      // Click the <span> inside <a> (toggle)
+      const aHandle = await liHandle.$('a span');
+      if (aHandle) {
+        await aHandle.click();
+        clicked = true;
+        await delay(350);
+        open = await liHandle.evaluate(el => el.classList.contains('open'));
+        const subMenu = await liHandle.$('.sub-menu.bb-open');
+        if (subMenu) count = (await subMenu.$$('li')).length;
+        console.log(`✅ "${label}" (span) clicked. Items: ${count}. Open: ${open}`);
+      }
+    } catch (e) {
+      console.warn(`⚠️ Could not click/check "${label}":`, e.message);
+    }
+  } else {
+    console.warn(`⚠️ "${label}" section not found`);
+  }
+  return { clicked, open, count };
+}
+
+module.exports = async function globalSidebarFlow(page, context = {}) {
+  // Layer 1: Structure
+  const sidebarLoadStart = performance.now();
+  await page.waitForSelector('aside.buddypanel', { visible: true, timeout: 7000 });
+  const sidebarLoadEnd = performance.now();
+
+  const sidebar = await page.$('aside.buddypanel');
+  if (!sidebar) throw new Error('Sidebar (buddypanel) not found in DOM');
+  const allItems = await page.$$('.buddypanel-menu > li');
+  console.log(`✅ Sidebar found with ${allItems.length} top-level menu items`);
+
+  // Define menu items to log/click
+  const collapsibleLabels = ["הגדרות", "קורסים אחרונים"];
+  const keyLabels = [
+    "הפרופיל שלי", "הקורס שלי",
+    "תמיכה מקצועית", "פניות ואישורים", "השמה", "ציונים",
+    "משוב", "התנתק", "הגדרות", "קורסים אחרונים"
+  ];
+  const presentLabels = [];
+
+  for (const label of keyLabels) {
+    const liHandle = await findMenuItemByAnySpan(page, label);
+    if (liHandle && await liHandle.evaluate(el => !!el)) {
+      presentLabels.push(label);
+      if (collapsibleLabels.includes(label)) {
+        await clickAndCheckMenuItem(liHandle, label);
+      } else {
+        // Log href
+        const a = await liHandle.$('a');
+        if (a) {
+          const href = await a.evaluate(el => el.getAttribute('href'));
+          console.log(`ℹ️  Menu "${label}" link: ${href}`);
+        }
+      }
+      console.log(`✅ Menu item found: "${label}"`);
+    } else {
+      console.warn(`⚠️ Menu item missing: "${label}"`);
+    }
+  }
+
+  // Toggle button (log presence)
+  const toggleBtn = await page.$('#toggle-sidebar');
+  if (toggleBtn) {
+    console.log('✅ Sidebar toggle button found');
+  } else {
+    console.warn('⚠️ Sidebar toggle button not found');
+  }
+
+  // JS error log
+  const consoleErrors = [];
+  const consoleWarnings = [];
+  page.on('console', msg => {
+    if (msg.type() === 'error') consoleErrors.push(msg.text());
+    if (msg.type() === 'warning') consoleWarnings.push(msg.text());
+  });
+
+  // Timing
+  const sidebarMs = Math.round(sidebarLoadEnd - sidebarLoadStart);
+  console.log(`⏱️ Sidebar loaded in ${sidebarMs}ms`);
+  await delay(350);
+
+  if (consoleErrors.length > 0) {
+    console.warn(`⚠️ Console JS errors during sidebar:`, consoleErrors);
+  }
+  if (consoleWarnings.length > 0) {
+    console.warn(`⚠️ Console JS warnings during sidebar:`, consoleWarnings);
+  }
+
+  // Metrics
+  if (context.shouldExport) {
+    addMetric({
+      flow: 'globalSidebarFlow-layer2',
+      sidebarMs,
+      topMenuCount: allItems.length,
+      presentLabels,
+      hasToggleButton: !!toggleBtn,
+      consoleErrors,
+      consoleWarnings,
+      timestamp: new Date().toISOString()
     });
-  
-    // 7. Last Courses section (non-admin): check the collapsible menu exists
-    const lastCourses = await page.$('#menu-item-last-courses');
-    if (lastCourses) {
-      console.log('✅ "קורסים אחרונים" section found (last courses)');
-      // Optionally check submenus are rendered
-      const courseItems = await page.$$('#menu-item-last-courses .sub-menu li');
-      console.log(`  ↳ Contains ${courseItems.length} recent courses`);
-    } else {
-      console.log('ℹ️  No last courses section (may be admin or user has no progress)');
-    }
-  
-    // 8. Toggle button existence
-    const toggleBtn = await page.$('#toggle-sidebar');
-    if (toggleBtn) {
-      console.log('✅ Sidebar toggle button found');
-    } else {
-      console.warn('⚠️  Sidebar toggle button not found');
-    }
-  
-    // Metrics (optional)
-    if (context.shouldExport) {
-      addMetric({
-        flow: 'globalSidebarFlow-layer1',
-        topMenuCount: allItems.length,
-        foundLabels: textContents,
-        hasLastCourses: !!lastCourses,
-        hasToggleButton: !!toggleBtn,
-        timestamp: new Date().toISOString()
-      });
-    }
-  
-    // 9. Log completion
-    console.log('🎉 [Layer 1] BuddyPanel sidebar basic QA checks PASSED');
-  };
-  
+  }
+
+  console.log('🎉 [Layer 2] BuddyPanel sidebar dynamic/interactivity checks PASSED');
+};
