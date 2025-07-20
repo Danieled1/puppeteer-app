@@ -1,0 +1,131 @@
+name: Puppeteer Context Full
+version: 0.0.1
+schema: v1
+docs:
+  - name: Ticket Flow and Audit Context
+    startUrl: https://docs.continue.dev
+    files:
+      - name: ticketFlow.js
+        content: |
+          This document captures the full Puppeteer-based QA and performance testing context.
+
+          ### Overview
+          This project uses Puppeteer to simulate user interaction on a WordPress-based LMS system. Flows like `ticketFlow`, `coursePageFlow`, `lessonPageFlow`, and `placementFlow` are used to audit interactivity, performance, AJAX bottlenecks, and UI layer reliability.
+
+          ### ticketFlow Goals
+          1. Track time from initial page load to submission.
+          2. Validate visibility of dropdowns and modals.
+          3. Time each meaningful chunk: DOM load, header/sidebar render, ACF load, sector/subsector dropdowns, TinyMCE field, modal open/close, row history load.
+          4. Track slow XHR and acf/validate_save_post.
+
+          ### Tools
+          - Puppeteer
+          - performance.now()
+          - Custom metrics exporter (addMetric + flushMetrics)
+          - Integration with Continue + Ollama for assisted diagnostics
+
+          ### Timing Model
+          A `timeline` object is used to track:
+          - `domReady`
+          - `buttonsReady`
+          - `headerDone`
+          - `sidebarDone`
+          - `formReady`
+          - `dropdownDone`
+          - `selectDone`
+          - `submitDone`
+          - `modalDone`
+          - `rowsDone`
+
+          This is transformed into a breakdown like:
+          ```js
+          {
+            domMs,
+            buttonsMs,
+            headerMs,
+            sidebarMs,
+            formReadyMs,
+            dropdownMs,
+            selectMs,
+            fillSubmitMs,
+            modalMs,
+            tableCheckMs,
+            typingDoneMs,
+            acfRenderMs,
+            submitMs,
+            ...
+          }
+          ```
+
+          ### Logging Output
+          The console shows:
+          - 📥 DOM Loaded
+          - 📄 Form Ready
+          - 🔧 Dropdown Options
+          - ✍️ Typing Done
+          - 🐢 Slow XHR (warns if > 500ms)
+          - 📊 Full metric export to `metricsExporter.js`
+
+          ### Current State
+          - Full flow exports JSON + CSV to `/exports`
+          - You can pass `--report` to `main.js` to trigger flushMetrics
+          - Global header and sidebar flows are timed and subtracted correctly
+          - ACF render and TinyMCE type duration are captured separately
+          - The flow warns if total load exceeds 9 seconds
+
+          ### Open Tasks
+          - Patch WordPress PHP to wrap `performance.now()` inline on server side
+          - Deep audit: if `.formReady` includes earlier sidebar/header flows by mistake
+          - Consider Continue rules to auto-split pieces for Ollama LLM insights
+
+          ### Continue Usage Plan
+          Use this document as an LLM context seed to:
+          - Help LLaMA3 track each metric subphase
+          - Assist in suggesting fixes for ACF or TinyMCE bottlenecks
+          - Validate full timeline balance
+          - Help with WordPress-side timing patches
+      - name: xhr-debug-summary.md
+        content: |
+          ---
+          description: Debugging acf/validate_save_post and other slow XHR calls inside ticketFlow
+          ---
+
+          🧠 You are reviewing slow network calls during the `ticketFlow`.
+
+          ### Last Run Example
+          - URL: `https://app.digitalschool.co.il/wp-admin/admin-ajax.php`
+          - Action: `acf/validate_save_post`
+          - Status: ✅ 200
+          - Duration: **1088.073ms**
+          - Label: `🐢 Slow XHR`
+
+          ### Purpose
+          This call is triggered after form submission. It validates the ACF fields server-side and may delay the page transition.
+
+          ### Strategy
+          - Log precise server-side time in the PHP hook.
+          - Consider conditional loading or caching.
+          - Alert if > 800ms.
+
+          ### Dev Tools Tip
+          You can inspect the `xhrMetrics` array in `ticketFlow` to isolate this POST.
+      - name: latest-ticketFlow-report.json
+        content: |
+          {
+            "flow": "ticketFlow",
+            "totalMs": 32888,
+            "domMs": 16102,
+            "buttonsMs": 49,
+            "headerMs": 1685,
+            "sidebarMs": 1763,
+            "preFormDelayMs": 300,
+            "formReadyMs": 13120,
+            "dropdownMs": 280,
+            "selectMs": 35,
+            "fillSubmitMs": 9200,
+            "modalMs": 1264,
+            "tableCheckMs": 590,
+            "slowXHRCount": 1,
+            "acfValidationXHR": [1088],
+            "timestamp": "2025-07-08T13:21:22.111Z"
+          }
