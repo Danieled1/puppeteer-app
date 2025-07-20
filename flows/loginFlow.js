@@ -3,6 +3,9 @@ const { addMetric } = require('../logger/metricsExporter');
 
 const username = process.env.TEST_USERNAME;
 const password = process.env.TEST_PASSWORD;
+// const username = process.env.POWER_USERNAME;
+// const password = process.env.POWER_PASSWORD;
+
 
 async function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -27,7 +30,10 @@ async function typeWithClear(page, selector, text, delayMs = 100) {
 
 module.exports = async function loginFlow(page, context = {}) {
   const flowStart = performance.now();
-
+  // Mimic a real user agent
+  await page.setUserAgent(
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+  );
   // Phase 1: Initial page load
   await page.goto('https://app.digitalschool.co.il/wp-login.php', { waitUntil: 'domcontentloaded' });
   const domLoaded = performance.now();
@@ -54,11 +60,17 @@ module.exports = async function loginFlow(page, context = {}) {
   const submitTime = Math.round(submitEnd - submitStart);
 
   console.log(`✅ Logged in. Submit Duration: ${submitTime}ms. Total Flow: ${totalTime}ms. URL: ${page.url()}`);
+  console.log('🔎 After login, current URL:', page.url());
+  await delay(1000); // Try a 1 second pause
 
   if (submitTime > 4000) {
     console.warn(`⚠️ SLOW LOGIN PROCESSING: took ${submitTime}ms`);
   }
-
+    // After successful login:
+  if (username === process.env.POWER_USERNAME) {
+    // Replace this with the correct slug for the admin user
+    await page.goto('https://app.digitalschool.co.il/members/supportecomschool-co-il/', { waitUntil: 'networkidle2' });
+  }
   if (context.shouldExport) {
     addMetric({
       flow: 'loginFlow',
