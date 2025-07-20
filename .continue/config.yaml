@@ -1,0 +1,33 @@
+name: page-tickets Performance Workspace
+description: Workspace focused on measuring and debugging custom Tickets page load time.
+
+files:
+  include:
+    - page-template/page-tickets.php
+    - frontend/page-tickets.js
+    - frontend/page-tickets.css
+    - layout-global/header.php
+    - layout-global/header-aside.php
+    - layout-global/buddypanel.php
+    - enqueue-config/functions.php
+    - enqueue-config/enqueue-scripts.php
+  exclude:
+    - node_modules/**
+    - tests/**
+    - '**/*.test.*'
+
+prompts:
+  - path: ai-prompts/ticketFlow-perf.md
+    description: Entry point prompt for generating Puppeteer-based performance analysis script.
+    provider: openai:gpt-4o
+    autoInject: true
+    contextFiles:
+      - page-template/page-tickets.php
+      - frontend/page-tickets.js
+      - frontend/page-tickets.css
+      - layout-global/header.php
+      - layout-global/header-aside.php
+      - layout-global/buddypanel.php
+      - enqueue-config/functions.php
+      - enqueue-config/enqueue-scripts.php
+    maxTokens: 6000
