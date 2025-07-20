@@ -9,10 +9,13 @@ const { flushMetrics } = require('./logger/metricsExporter');
 const flows = {
   login: require('./flows/loginFlow'),
   globalSidebar: require('./flows/globalTemplate/globalSidebarFlow'),
+  globalHeader: require('./flows/globalTemplate/globalHeaderFlow'),
   courses: require('./flows/coursesFlow'),
   coursePage: require('./flows/coursePageFlow'),
   lessonPage: require('./flows/lessonPageFlow'),
   ticket: require('./flows/ticketFlow'),
+  ticketPerf : require('./flows/ticketFlow/ticketFlow-perf'),
+  ticketPerfNavigation: require('./flows/ticketFlow/ticketFlow-perf-navigation'),
   placement: require('./flows/placementFlow'),
   grades: require('./flows/gradesFlow'),
   support: require('./flows/supportFlow'),
@@ -36,6 +39,9 @@ Available flows:
   coursePage           → Load course overview page
   lessonPage           → Open lesson and video playback
   ticket               → Open and submit a ticket
+  ticketPerf           → Performance test for ticket flow
+  globalSidebar        → Test global sidebar visibility
+  globalHeader         → Test global header visibility
   placement            → Test placement form readiness
   grades               → Load grades and test AJAX
   support              → Test support page visibility
@@ -54,12 +60,19 @@ Examples:
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
-    args: ['--disable-cache', '--disk-cache-size=0'],
   });
 
   const page = await browser.newPage();
-  await setupXHRLogger(page);
 
+  await page.setUserAgent(
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+  );
+  await page.setExtraHTTPHeaders({
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Upgrade-Insecure-Requests': '1',
+    'Referer': 'https://app.digitalschool.co.il/',
+  });
+  await setupXHRLogger(page);
   for (const flowName of selectedFlows) {
     if (!flows[flowName]) {
       console.warn(`❌ Skipping unknown flow: ${flowName}`);

@@ -5,7 +5,9 @@
   "scripts": {
     "start": "node main.js",
     "audit": "node main.js login courses coursePage lessonPage ticket placement grades support",
-    "help": "node main.js --help"
+    "help": "node main.js --help",
+    "continue": "continue --docs=.continue/docs/new-doc.yaml"
+
   },
   "keywords": [],
   "author": "",
