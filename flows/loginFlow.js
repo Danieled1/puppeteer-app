@@ -40,11 +40,11 @@ module.exports = async function loginFlow(page, context = {}) {
   console.log(`📥 Login page DOM loaded in ${(domLoaded - flowStart).toFixed(0)}ms`);
 
   // Phase 2: Safe typing
-  await typeWithClear(page, '#user_login',username); 
-  await typeWithClear(page, '#user_pass',password);
+  await typeWithClear(page, '#user_login', username);
+  await typeWithClear(page, '#user_pass', password);
 
-  
-  
+
+
 
 
   // Phase 3: Login action (only this should be measured for login processing)
@@ -66,11 +66,17 @@ module.exports = async function loginFlow(page, context = {}) {
   if (submitTime > 4000) {
     console.warn(`⚠️ SLOW LOGIN PROCESSING: took ${submitTime}ms`);
   }
-    // After successful login:
+
+  // After successful login:
   if (username === process.env.POWER_USERNAME) {
     // Replace this with the correct slug for the admin user
     await page.goto('https://app.digitalschool.co.il/members/supportecomschool-co-il/', { waitUntil: 'networkidle2' });
   }
+  // Place this at the very end, after login and any post-login navigation:
+  const cookies = await page.cookies();
+  console.log('Session cookies:', cookies);
+  if (context) context.cookies = cookies;
+
   if (context.shouldExport) {
     addMetric({
       flow: 'loginFlow',

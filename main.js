@@ -15,7 +15,6 @@ const flows = {
   lessonPage: require('./flows/lessonPageFlow'),
   ticket: require('./flows/ticketFlow'),
   ticketPerf : require('./flows/ticketFlow/ticketFlow-perf'),
-  ticketPerfNavigation: require('./flows/ticketFlow/ticketFlow-perf-navigation'),
   placement: require('./flows/placementFlow'),
   grades: require('./flows/gradesFlow'),
   support: require('./flows/supportFlow'),
