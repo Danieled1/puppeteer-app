@@ -19,6 +19,7 @@ logs/
 .pem
 *.csv
 *.json
+*.png
 # Ignore OS and editor-specific files
 .DS_Store
 Thumbs.db
