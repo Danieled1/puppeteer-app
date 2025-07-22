@@ -54,6 +54,12 @@ async function ticketFlowPerf(page, context = {}) {
             const lcp = lcpEntries[lcpEntries.length - 1];
             LCP = lcp.startTime || lcp.renderTime || lcp.loadTime || 0;
         }
+        console.log('LCP Entries:', lcpEntries); // Debug information to console
+        // Check if LCP was recorded at all
+        if (LCP === 0) {
+            console.warn('LCP was not recorded.');
+        }
+
         const nav = performance.getEntriesByType('navigation')[0];
         return {
             FCP,
